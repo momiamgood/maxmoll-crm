@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\OrderServiceException;
 use Illuminate\Http\JsonResponse;
+use Exception;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -37,6 +39,8 @@ abstract class Controller
             return response()->json(['error' => $e->getMessage()], 404);
         } catch (ConflictHttpException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

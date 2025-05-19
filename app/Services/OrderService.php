@@ -288,7 +288,8 @@ class OrderService
 
         if ($after < 0) {
             throw new ConflictHttpException(
-                message: 'Insufficient quantity of goods in stock.');
+                message: 'Insufficient quantity of goods in stock.'
+            );
         }
 
         $this->triggerChangeStockHistory($productId, $warehouseId, $before, $after, -$count, $reason);

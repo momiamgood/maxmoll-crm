@@ -14,6 +14,8 @@ class OrderItems extends Pivot
     /** @var bool */
     public $timestamps = false;
 
+    protected $table =  'order_items';
+
     /**
      * Связь с заказом.
      *
