@@ -119,6 +119,47 @@ class OrderService
             throw new orderServiceException('Order update error: ' . $exception->getMessage());
         }
     }
+
+    /**
+     * Ищет заказ по id
+     *
+     * @param int $id
+     * @return ?Order
+     */
+    public function findById(int $id): ?Order
+    {
+        return Order::find($id);
+    }
+
+    /**
+     * Завершает заказ.
+     *
+     * Меняет статус заказа на completed.
+     *
+     * @param int $id
+     * @return mixed
+     * @throws orderServiceException
+     */
+    public function complete(int $id): mixed
+    {
+        DB::beginTransaction();
+
+        try {
+            $order = Order::findOrFail($id);
+
+            $order->update([
+                'status' => OrderStatusEnum::COMPLETED,
+            ]);
+
+            DB::commit();
+            return $order;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            throw new orderServiceException(
+                message: 'Order update error: ' . $exception->getMessage()
+            );
+        }
+    }
     /**
      * Увеличивает остаток товара на складе.
      *

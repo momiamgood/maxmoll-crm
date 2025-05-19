@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Handlers\Order\CompleteOrderHandler;
 use App\Handlers\Order\ListOrderHandler;
+use App\Handlers\Order\UpdateOrderHandler;
 use App\Http\Requests\OrderListRequest;
+use App\Http\Requests\OrderRequest;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\JsonResponse;
 
@@ -78,4 +81,15 @@ class OrderController extends Controller
         );
     }
 
+    /**
+     * Завершить заказ.
+     *
+     * @param int $id
+     * @param CompleteOrderHandler $handler
+     * @return JsonResponse
+     */
+    public function complete(int $id, CompleteOrderHandler $handler): JsonResponse
+    {
+        return $this->handleWithExceptions(fn() => $handler->handle($id));
+    }
 }
