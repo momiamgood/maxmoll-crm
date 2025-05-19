@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Handlers\Order\CancelOrderHandler;
 use App\Handlers\Order\CompleteOrderHandler;
+use App\Handlers\Order\CreateOrderHandler;
 use App\Handlers\Order\ListOrderHandler;
+use App\Handlers\Order\ResumeOrderHandler;
 use App\Handlers\Order\UpdateOrderHandler;
 use App\Http\Requests\OrderListRequest;
 use App\Http\Requests\OrderRequest;
