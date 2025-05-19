@@ -59,10 +59,66 @@ class OrderService
             return $order;
         } catch (Throwable $exception) {
             DB::rollBack();
-            throw new OrderServiceException('Order creation error: ' . $exception->getMessage());
+            throw new orderServiceException('Order creation error: ' . $exception->getMessage());
         }
     }
 
+    /**
+     * Обновляет заказ и его позиции.
+     *
+     * Добавляет лог в таблицу histories с информацией по изменению количества и типом операции update
+     *
+     * @param OrderUpdateDTO $orderUpdateDTO
+     * @return Order
+     * @throws orderServiceException
+     */
+    public function update(OrderUpdateDTO $orderUpdateDTO): Order
+    {
+        DB::beginTransaction();
+
+        try {
+            $order = Order::findOrFail($orderUpdateDTO->id);
+
+            $order->update([
+                'customer' => $orderUpdateDTO->customer,
+                'status' => OrderStatusEnum::ACTIVE,
+                'warehouse_id' => $orderUpdateDTO->warehouseId
+            ]);
+
+            // Возврат остатков по старым позициям
+            foreach ($order->items as $oldItem) {
+                $this->incrementStock(
+                    $oldItem->product_id,
+                    $order->warehouse_id,
+                    $oldItem->count,
+                    HistoryChangeReasonsEnum::UPDATE
+                );
+            }
+
+            $order->items()->delete();
+
+            foreach ($orderUpdateDTO->orderItems as $orderItem) {
+                OrderItems::create([
+                    'product_id' => $orderItem->productId,
+                    'count' => $orderItem->count,
+                    'order_id' => $order->id,
+                ]);
+
+                $this->decrementStock(
+                    $orderItem->productId,
+                    $orderUpdateDTO->warehouseId,
+                    $orderItem->count,
+                    HistoryChangeReasonsEnum::CREATE
+                );
+            }
+
+            DB::commit();
+            return $order;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            throw new orderServiceException('Order update error: ' . $exception->getMessage());
+        }
+    }
     /**
      * Увеличивает остаток товара на складе.
      *

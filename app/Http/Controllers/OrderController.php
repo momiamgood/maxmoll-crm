@@ -29,4 +29,53 @@ class OrderController extends Controller
     {
         return response()->json($handler->handle($request));
     }
+
+    /**
+     * Создать новый заказ.
+     *
+     * Тело запроса:
+     *  - customer (string, required): имя заказчика
+     *  - warehouseId (int, required): ID склада
+     *  - items (array of objects, required): массив товаров
+     *      - productId (int, required): ID товара
+     *      - count (int, required): количество товара
+     *
+     * @param OrderRequest $request
+     * @param CreateOrderHandler $handler
+     * @return JsonResponse
+     */
+    public function create(OrderRequest $request, CreateOrderHandler $handler): JsonResponse
+    {
+        return $this->handleWithExceptions(
+            callback: fn () => $handler->handle($request),
+            successCode: 201
+        );
+    }
+
+    /**
+     * Обновить существующий заказ.
+     *
+     * Тело запроса:
+     *   - customer (string, required): имя заказчика
+     *   - warehouseId (int, required): ID склада
+     *   - items (array of objects, required): массив товаров
+     *       - productId (int, required): ID товара
+     *       - count (int, required): количество товара
+     *
+     *
+     * @param OrderRequest $request
+     * @param int $id
+     * @param UpdateOrderHandler $handler
+     * @return JsonResponse
+     */
+    public function update(OrderRequest $request, int $id, UpdateOrderHandler $handler): JsonResponse
+    {
+        return $this->handleWithExceptions(
+            callback: fn () => $handler->handle(
+                requestData: $request->all(),
+                id: $id
+            )
+        );
+    }
+
 }
