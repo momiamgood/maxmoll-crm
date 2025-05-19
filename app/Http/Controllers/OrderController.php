@@ -105,4 +105,16 @@ class OrderController extends Controller
     {
         return $this->handleWithExceptions(fn() => $handler->handle($id));
     }
+
+    /**
+     * Возобновить отменённый заказ.
+     *
+     * @param int $id
+     * @param ResumeOrderHandler $handler
+     * @return JsonResponse
+     */
+    public function resume(int $id, ResumeOrderHandler $handler): JsonResponse
+    {
+        return $this->handleWithExceptions(fn() => $handler->handle($id));
+    }
 }
