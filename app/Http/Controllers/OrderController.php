@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Handlers\Order\CancelOrderHandler;
 use App\Handlers\Order\CompleteOrderHandler;
 use App\Handlers\Order\ListOrderHandler;
 use App\Handlers\Order\UpdateOrderHandler;
@@ -89,6 +90,18 @@ class OrderController extends Controller
      * @return JsonResponse
      */
     public function complete(int $id, CompleteOrderHandler $handler): JsonResponse
+    {
+        return $this->handleWithExceptions(fn() => $handler->handle($id));
+    }
+
+    /**
+     * Отменить заказ.
+     *
+     * @param int $id
+     * @param CancelOrderHandler $handler
+     * @return JsonResponse
+     */
+    public function cancel(int $id, CancelOrderHandler $handler): JsonResponse
     {
         return $this->handleWithExceptions(fn() => $handler->handle($id));
     }

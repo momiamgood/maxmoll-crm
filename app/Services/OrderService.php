@@ -160,6 +160,81 @@ class OrderService
             );
         }
     }
+
+    /**
+     * Производит отмену заказа.
+     *
+     * Пополняет остатки товара на складе, изменяет статус заказа на canceled.
+     * Добавляет лог в таблицу histories с информацией по изменению количества и типом операции
+     *
+     * @param int $id
+     * @return Order|null
+     * @throws OrderServiceException
+     */
+    public function cancel(int $id): ?Order
+    {
+        DB::beginTransaction();
+
+        try {
+            $order = Order::findOrFail($id);
+
+            // Возврат товара на склад
+            foreach ($order->items as $item) {
+                $this->incrementStock(
+                    $item->product_id,
+                    $order->warehouse_id,
+                    $item->count,
+                    HistoryChangeReasonsEnum::CANCEL
+                );
+            }
+
+            $order->update(['status' => OrderStatusEnum::CANCELED]);
+
+            DB::commit();
+            return $order;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            throw new OrderServiceException('Order update error: ' . $exception->getMessage());
+        }
+    }
+
+    /**
+     * Возобновляет отмененный заказ, ставит его в статус active.
+     *
+     * Повторно списывает отстатки товара со склада.
+     * Добавляет лог в таблицу histories с информацией по изменению количества и типом операции
+     *
+     * @param int $id
+     * @return mixed
+     * @throws OrderServiceException
+     */
+    public function resume(int $id): mixed
+    {
+        DB::beginTransaction();
+
+        try {
+            $order = Order::findOrFail($id);
+
+            // Повторное списание товара со склада
+            foreach ($order->items as $item) {
+                $this->decrementStock(
+                    $item->product_id,
+                    $order->warehouse_id,
+                    $item->count,
+                    HistoryChangeReasonsEnum::RESUME
+                );
+            }
+
+            $order->update(['status' => OrderStatusEnum::ACTIVE]);
+
+            DB::commit();
+            return $order;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            throw new OrderServiceException('Order update error: ' . $exception->getMessage());
+        }
+    }
+
     /**
      * Увеличивает остаток товара на складе.
      *
